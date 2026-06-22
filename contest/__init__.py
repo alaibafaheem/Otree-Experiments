@@ -2,7 +2,8 @@
 # White: no change
 # Green: new file but it was classed earlier
 # Orange: These are not tracked by git
-# Blue:
+# Blue: changed files
+
 from otree.api import *
 
 
