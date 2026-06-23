@@ -60,21 +60,50 @@ class SetUpRound(WaitPage):
     def after_all_players_arrive(subsession):
         subsession.setup_round()
 
+# Pages should not have much code, they should be simple, their job is just to get data from the model
+class SetupRound(WaitPage):
+    wait_for_all_groups = True
+
+    @staticmethod
+    def after_all_players_arrive(subsession):
+        subsession.setup_round()
 
 class Intro(Page):
-    pass
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == 1
 
 class Decision(Page):
-    pass
+    form_model = "player"
+    form_fields = ["tickets_purchased"]
+
+    @staticmethod
+    def error_message(player, values):
+        if values["tickets_purchased"] < 0:
+            return "You cannot buy a negative number of tickets."
+        if values["tickets_purchased"] > player.max_tickets_affordable:
+            return (
+                f"Buying {values['tickets_purchased']} tickets would cost "
+                f"{values['tickets_purchased'] * player.cost_per_ticket} "
+                f"which is more than your endowment of {player.endowment}."
+            )
+        return None
+    
+class WaitForDecisions(WaitPage):
+    wait_for_all_groups = True
+
+    @staticmethod
+    def after_all_players_arrive(subsession):
+        for group in subsession.get_groups():
+            group.determine_outcome()
 
 class Outcome(Page):
     pass
 
-class WaitForDecisions(WaitPage):
-    pass
-
 class EndBlock(Page):
-    pass
+    @staticmethod
+    def is_displayed(player):
+        return player.round_number == C.NUM_ROUNDS
 
 # In python, suggested to put one item on each line if there's a list
 page_sequence = [
